@@ -5,6 +5,8 @@ import { apiBaseUrl } from '../api/useApiClient.ts'
 import { useSpecialties } from '../hooks/useSpecialties.ts'
 import { useMedicalServices } from '../hooks/useMedicalServices.ts'
 import { useMedicalInsurances } from '../hooks/useMedicalInsurances.ts'
+import { useTurneroMedicos } from '../hooks/useTurneroMedicos.ts'
+import { useTurneroSectores } from '../hooks/useTurneroSectores.ts'
 import type { ApiQueryState } from '../hooks/useApiQuery.ts'
 
 const integratedModules = gatewayManifest.filter((entry) => entry.status === 'integrated')
@@ -20,6 +22,8 @@ function getItemLabel(item: unknown): string {
     const name =
       record.name ??
       record.Name ??
+      record.nombre ??
+      record.Nombre ??
       record.description ??
       record.Description ??
       record.displayName ??
@@ -30,7 +34,9 @@ function getItemLabel(item: unknown): string {
       record.insuranceName ??
       record.InsuranceName ??
       record.businessName ??
-      record.BusinessName
+      record.BusinessName ??
+      record.apellido ??
+      record.Apellido
     if (typeof name === 'string' && name.length > 0) return name
 
     const id = record.id ?? record.Id ?? record.ID
@@ -117,11 +123,15 @@ export function WorkspacePage() {
   const specialties = useSpecialties()
   const medicalServices = useMedicalServices()
   const medicalInsurances = useMedicalInsurances()
+  const turneroMedicos = useTurneroMedicos()
+  const turneroSectores = useTurneroSectores()
 
   function reloadAll() {
     void specialties.reload()
     void medicalServices.reload()
     void medicalInsurances.reload()
+    void turneroMedicos.reload()
+    void turneroSectores.reload()
   }
 
   return (
@@ -169,6 +179,7 @@ export function WorkspacePage() {
         </section>
       </section>
 
+      <h3 className="section-title">Catalog</h3>
       <section className="grid grid-3">
         <ModuleCard
           eyebrow="Catalog"
@@ -193,6 +204,24 @@ export function WorkspacePage() {
         />
       </section>
 
+      <h3 className="section-title">Turnero</h3>
+      <section className="grid">
+        <ModuleCard
+          eyebrow="Turnero"
+          title="Medicos"
+          endpoint="GET /offices/Medicos"
+          query={turneroMedicos}
+          onReload={() => void turneroMedicos.reload()}
+        />
+        <ModuleCard
+          eyebrow="Turnero"
+          title="Sectores"
+          endpoint="GET /offices/Sectores"
+          query={turneroSectores}
+          onReload={() => void turneroSectores.reload()}
+        />
+      </section>
+
       <section className="grid">
         <section className="card">
           <p className="eyebrow">Contracts</p>
@@ -210,6 +239,10 @@ export function WorkspacePage() {
                 </li>
               ))
             )}
+            <li className="muted">
+              <code>pricelists</code> — integrated but no list-all endpoint available
+              (all 10 endpoints require path params)
+            </li>
           </ul>
         </section>
 
@@ -225,6 +258,12 @@ export function WorkspacePage() {
             </li>
             <li>
               <code>GET /medicalinsurances</code> — useMedicalInsurances()
+            </li>
+            <li>
+              <code>GET /offices/Medicos</code> — useTurneroMedicos()
+            </li>
+            <li>
+              <code>GET /offices/Sectores</code> — useTurneroSectores()
             </li>
           </ul>
         </section>
